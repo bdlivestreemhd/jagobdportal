@@ -199,7 +199,7 @@
         }
 
         // Fetch the playlist from the external file
-        fetch('https://raw.githubusercontent.com/bdlivestreemhd/FreeIPTV/refs/heads/main/Enjoy.m3u')
+        fetch('https://raw.githubusercontent.com/nayeem086/playlists/7b46d486e2eac8558f32fefc6e008094bb98d6c8/bdcast.m3u')
             .then(response => response.text())
             .then(playlist => {
                 const channels = parseM3U8(playlist);
