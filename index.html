@@ -1,12 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free IPTV</title>
-
-    <!-- Base CSS for Styling -->
+    <title>Free IPTV - Clappr Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,7 +16,6 @@
             margin: 0;
             background-color: #464646;
         }
-
         header {
             color: white;
             padding: 15px;
@@ -30,11 +27,9 @@
             align-items: center;
             justify-content: center;
         }
-
         .hr {
             width: 20%;
         }
-
         .tv-container {
             display: flex;
             width: 90%;
@@ -42,7 +37,6 @@
             max-width: 1200px;
             flex-direction: column;
         }
-
         .channel-list {
             width: 100%;
             background: #333;
@@ -52,7 +46,6 @@
             box-sizing: border-box;
             box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
         }
-
         .channel-item {
             display: flex;
             align-items: center;
@@ -63,19 +56,16 @@
             transition: background-color 0.3s, transform 0.2s;
             box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
         }
-
         .channel-item img {
             width: 50px;
             height: 50px;
             margin-right: 10px;
             border-radius: 8px;
         }
-
         .channel-item:hover {
             background-color: #444;
             transform: scale(1.05);
         }
-
         .player {
             width: 100%;
             background: #000;
@@ -88,48 +78,40 @@
             box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
             color: white;
             font-size: 18px;
+            position: relative;
         }
-
-        .player iframe {
+        #clappr-player {
             width: 100%;
             height: 100%;
-            border: none;
             border-radius: 8px;
         }
-
         @media (min-width: 768px) {
             .tv-container {
                 flex-direction: row;
             }
-
             .channel-list {
                 max-width: 30%;
                 width: 30%;
                 border-radius: 10px;
             }
-
             .player {
                 width: 70%;
                 border-radius: 10px;
                 margin-right: 10px;
             }
         }
-
         @media (max-width: 767px) {
             .tv-container {
                 flex-direction: column;
             }
-
             .channel-item img {
                 width: 70px;
                 height: 70px;
                 border-radius: 10px;
             }
-
             .player {
                 border-radius: 10px;
             }
-
             .channel-list {
                 max-height: 60%;
                 width: 100%;
@@ -142,25 +124,23 @@
 </head>
 <body>
     <header>
-        JagoBD WEB Portal
+        JagoBD WEB Portal - Clappr Player
         <hr class="hr">
     </header>
-
     <div class="tv-container">
-        <div class="player" id="player">
-            <p>Select a channel to play</p>
+        <div class="player">
+            <div id="clappr-player"></div>
         </div>
         <div class="channel-list" id="channel-list"></div>
     </div>
 
-    <!-- JavaScript for handling channel clicks and displaying URLs in iframe -->
     <script>
-        // Function to parse the playlist
+        let playerInstance;
+
         function parseM3U8(playlist) {
             const lines = playlist.split('\n');
             let channels = [];
             let currentChannel = {};
-
             lines.forEach(line => {
                 if (line.startsWith('#EXTINF')) {
                     const name = line.split(',')[1];
@@ -173,32 +153,39 @@
                     currentChannel = {};
                 }
             });
-
             return channels;
         }
 
-        // Function to render the channel list
         function renderChannelList(channels) {
             const channelList = document.getElementById('channel-list');
-            channels.forEach((channel) => {
+            channels.forEach((channel, index) => {
                 const channelItem = document.createElement('div');
                 channelItem.classList.add('channel-item');
                 channelItem.innerHTML = `
                     <img src="${channel.logo}" alt="${channel.name}">
                     <span>${channel.name}</span>
                 `;
-                channelItem.addEventListener('click', () => loadChannelInIframe(channel.url));
+                channelItem.addEventListener('click', () => loadChannel(channel.url));
                 channelList.appendChild(channelItem);
+                if (index === 0) loadChannel(channel.url); // Load first channel by default
             });
         }
 
-        // Function to load the selected channel URL into the iframe
-        function loadChannelInIframe(url) {
-            const player = document.getElementById('player');
-            player.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
+        function loadChannel(url) {
+            if (playerInstance) {
+                playerInstance.destroy();
+            }
+            playerInstance = new Clappr.Player({
+                source: url,
+                parentId: "#clappr-player",
+                autoPlay: true,
+                mute: false,
+                width: "100%",
+                height: "100%",
+                poster: "https://i.postimg.cc/CxwVHY40/20250415-163330.png"
+            });
         }
 
-        // Fetch the playlist from the external file
         fetch('https://raw.githubusercontent.com/bdlivestreemhd/FreeIPTV/refs/heads/main/Enjoy.m3u')
             .then(response => response.text())
             .then(playlist => {
